@@ -1,14 +1,20 @@
 'use client'
 
+import { ScrollBasedVelocityImagesDemo } from '@/components/scrol'
 import { Button } from '@/components/ui/button'
+import { SparklesText } from '@/components/ui/sparkles-text'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { Mail, Lock } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { Card, CardHeader, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { ShineBorder } from '@/components/ui/shine-border'
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import AnimatedTitle from '@/components/textx'
 
-/* ---------- Instruments ---------- */
 const instruments = ['🔧', '🔨', '⚙️', '🛠️', '🔩', '🪛', '🪚']
 
-/* ---------- Smooth Gradient Background ---------- */
 const AnimatedBackground = () => {
   return (
     <motion.div
@@ -29,7 +35,6 @@ const AnimatedBackground = () => {
   )
 }
 
-/* ---------- Mouse-Reactive Floating Instruments ---------- */
 const FloatingInstruments = () => {
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -40,7 +45,6 @@ const FloatingInstruments = () => {
   const [items, setItems] = useState<any[]>([])
 
   useEffect(() => {
-    // Generate random positions/icons only on client
     const generated = Array.from({ length: 12 }).map(() => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -61,7 +65,7 @@ const FloatingInstruments = () => {
     return () => window.removeEventListener('mousemove', move)
   }, [mouseX, mouseY])
 
-  if (!items.length) return null // nothing until client generates
+  if (!items.length) return null
 
   return (
     <motion.div
@@ -96,53 +100,71 @@ const FloatingInstruments = () => {
   )
 }
 
-/* ---------- Login Page ---------- */
 const LoginPage = () => {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 sm:px-6">
       <AnimatedBackground />
       <FloatingInstruments />
-
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl bg-white/85 backdrop-blur-sm p-6 sm:p-10 shadow-2xl border border-white/40"
+        className="relative w-full max-w-[350px] z-10"
       >
-        <h1 className="mb-6 sm:mb-8 text-center text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
-          Re<span className="text-orange-500">Pair</span>
-        </h1>
+        <Card className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-white/85 backdrop-blur-sm shadow-2xl border border-[] border-white/40">
+          <ShineBorder className='border-[4px]' shineColor={["#fde68a", "#fb923c", "#f87171"]} />
+          <CardHeader className="text-center">
+            <AnimatedTitle />
+            <CardDescription className="mt-2 text-sm text-gray-600">
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
 
-        <form className="space-y-4 sm:space-y-5">
-          <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
-            <Mail size={18} className="text-orange-500" />
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base"
-            />
-          </div>
+          <CardContent>
+            <form className="space-y-4 sm:space-y-5">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 py-2 sm:px-4 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
+                  <Mail size={18} className="text-orange-500" />
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base border-none"
+                  />
+                </div>
+              </div>
 
-          <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
-            <Lock size={18} className="text-orange-500" />
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base"
-            />
-          </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 py-2 sm:px-4 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
+                  <Lock size={18} className="text-orange-500" />
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base border-none"
+                  />
+                </div>
+              </div>
+            </form>
+          </CardContent>
 
-          <Button className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-red-500 py-2 sm:py-3 font-semibold text-white shadow-md hover:scale-[1.02] transition text-sm sm:text-base">
-            Login
-          </Button>
-        </form>
+          <CardFooter className="flex flex-col gap-4">
+            <Link href="/home" className="w-full">
+              <Button className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-red-500 py-2 sm:py-3 font-semibold text-white shadow-md hover:scale-[1.02] transition text-sm sm:text-base">
+                Login
+              </Button>
+            </Link>
 
-        <p className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-gray-700">
-          Need an account?{' '}
-          <a href="/register" className="font-semibold text-orange-600 hover:underline">
-            Sign up
-          </a>
-        </p>
+            <p className="text-center text-xs sm:text-sm text-gray-700">
+              Need an account?{' '}
+              <a href="/register" className="font-semibold text-orange-600 hover:underline">
+                Sign up
+              </a>
+            </p>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   )
