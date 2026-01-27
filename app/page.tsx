@@ -1,142 +1,149 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { motion } from 'framer-motion'
+import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { Mail, Lock } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-const icons = ['🔧', '🔨', '🪛', '⚙️', '🪚', '🪓', '🔩', '🛠️']
+/* ---------- Instruments ---------- */
+const instruments = ['🔧', '🔨', '⚙️', '🛠️', '🔩', '🪛', '🪚']
 
-const FloatingIcons = () => {
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    // Only runs on client
-    setDimensions({ width: window.innerWidth, height: window.innerHeight })
-
-    const handleResize = () =>
-      setDimensions({ width: window.innerWidth, height: window.innerHeight })
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  if (!dimensions.width || !dimensions.height) return null
-
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      {Array.from({ length: Math.floor(icons.length * 1.4) }).map((_, i) => {
-        const icon = icons[i % icons.length]
-        return (
-          <motion.div
-            key={i}
-            className="absolute text-2xl md:text-4xl"
-            initial={{
-              x: Math.random() * dimensions.width,
-              y: Math.random() * dimensions.height,
-              opacity: 0.4,
-              scale: Math.random() * 1.5 + 0.5,
-            }}
-            animate={{
-              y: [
-                Math.random() * dimensions.height,
-                Math.random() * dimensions.height,
-              ],
-              x: [
-                Math.random() * dimensions.width,
-                Math.random() * dimensions.width,
-              ],
-              rotate: [0, 360],
-              opacity: [0.2, 0.8],
-            }}
-            transition={{
-              duration: 15 + i * 2,
-              repeat: Infinity,
-              repeatType: 'mirror',
-              ease: 'easeInOut',
-            }}
-          >
-            {icon}
-          </motion.div>
-        )
-      })}
-    </div>
-  )
-}
-
+/* ---------- Smooth Gradient Background ---------- */
 const AnimatedBackground = () => {
   return (
     <motion.div
       className="absolute inset-0"
+      style={{
+        background: "linear-gradient(120deg, #fde68a, #fb923c, #f87171)",
+        backgroundSize: "200% 200%",
+      }}
       animate={{
-        background: [
-          'linear-gradient(to right, #facc15, #f97316, #ef4444)',
-          'linear-gradient(to right, #f97316, #ef4444, #facc15)',
-          'linear-gradient(to right, #ef4444, #facc15, #f97316)',
-        ],
+        backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
       }}
       transition={{
-        duration: 10,
+        duration: 20,
         repeat: Infinity,
-        repeatType: 'mirror',
+        ease: "linear",
       }}
     />
   )
 }
 
+/* ---------- Mouse-Reactive Floating Instruments ---------- */
+const FloatingInstruments = () => {
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const springX = useSpring(mouseX, { stiffness: 40, damping: 18 })
+  const springY = useSpring(mouseY, { stiffness: 40, damping: 18 })
+
+  const [items, setItems] = useState<any[]>([])
+
+  useEffect(() => {
+    // Generate random positions/icons only on client
+    const generated = Array.from({ length: 12 }).map(() => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 1.2 + 0.7,
+      duration: Math.random() * 18 + 15,
+      delay: Math.random() * 5,
+      rotate: Math.random() > 0.5 ? 360 : -360,
+      icon: instruments[Math.floor(Math.random() * instruments.length)],
+    }))
+    setItems(generated)
+
+    const move = (e: MouseEvent) => {
+      mouseX.set((e.clientX / window.innerWidth - 0.5) * 60)
+      mouseY.set((e.clientY / window.innerHeight - 0.5) * 60)
+    }
+
+    window.addEventListener('mousemove', move)
+    return () => window.removeEventListener('mousemove', move)
+  }, [mouseX, mouseY])
+
+  if (!items.length) return null // nothing until client generates
+
+  return (
+    <motion.div
+      className="absolute inset-0 overflow-hidden pointer-events-none"
+      style={{ x: springX, y: springY }}
+    >
+      {items.map((item, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-2xl sm:text-3xl opacity-30"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            scale: item.size,
+          }}
+          animate={{
+            y: ['20%', '-120%'],
+            rotate: [0, item.rotate],
+            opacity: [0.15, 0.4, 0.15],
+          }}
+          transition={{
+            duration: item.duration,
+            delay: item.delay,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        >
+          {item.icon}
+        </motion.div>
+      ))}
+    </motion.div>
+  )
+}
+
+/* ---------- Login Page ---------- */
 const LoginPage = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center relative overflow-hidden">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 sm:px-6">
       <AnimatedBackground />
-      <FloatingIcons />
+      <FloatingInstruments />
 
-      <div className="relative w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md p-10 shadow-2xl border border-gray-200 z-10">
-        <h1 className="mb-8 text-center text-4xl font-extrabold text-gray-900 flex items-center justify-center gap-2">
-          RePair
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="relative z-10 w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl bg-white/85 backdrop-blur-sm p-6 sm:p-10 shadow-2xl border border-white/40"
+      >
+        <h1 className="mb-6 sm:mb-8 text-center text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+          Re<span className="text-orange-500">Pair</span>
         </h1>
 
-        <form className="space-y-6">
-          {/* Email input */}
-          <div className="relative flex items-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-200">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
-              <Mail size={18} />
-            </div>
+        <form className="space-y-4 sm:space-y-5">
+          <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
+            <Mail size={18} className="text-orange-500" />
             <input
               type="email"
-              id="email"
               placeholder="you@example.com"
-              className="ml-3 flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400"
+              className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base"
             />
           </div>
 
-          {/* Password input */}
-          <div className="relative flex items-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-200">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
-              <Lock size={18} />
-            </div>
+          <div className="flex items-center gap-3 rounded-xl border bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 focus-within:ring-2 focus-within:ring-orange-300">
+            <Lock size={18} className="text-orange-500" />
             <input
               type="password"
-              id="password"
               placeholder="••••••••"
-              className="ml-3 flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400"
+              className="flex-1 bg-transparent outline-none text-gray-800 text-sm sm:text-base"
             />
           </div>
 
-          <Button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 rounded-lg shadow-lg transition-transform hover:scale-[1.03]">
+          <Button className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-red-500 py-2 sm:py-3 font-semibold text-white shadow-md hover:scale-[1.02] transition text-sm sm:text-base">
             Login
           </Button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-gray-700">
+        <p className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-gray-700">
           Need an account?{' '}
-          <a
-            href="/register"
-            className="text-orange-600 hover:underline font-semibold"
-          >
+          <a href="/register" className="font-semibold text-orange-600 hover:underline">
             Sign up
           </a>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }
