@@ -1,30 +1,51 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import React from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const icons = ['🔧', '🔨', '🪛', '⚙️', '🪚', '🪓', '🔩', '🛠️']
 
 const FloatingIcons = () => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    // Only runs on client
+    setDimensions({ width: window.innerWidth, height: window.innerHeight })
+
+    const handleResize = () =>
+      setDimensions({ width: window.innerWidth, height: window.innerHeight })
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  if (!dimensions.width || !dimensions.height) return null
+
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {Array.from({ length: icons.length * 1.4 }).map((_, i) => {
+      {Array.from({ length: Math.floor(icons.length * 1.4) }).map((_, i) => {
         const icon = icons[i % icons.length]
         return (
           <motion.div
             key={i}
             className="absolute text-2xl md:text-4xl"
             initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: Math.random() * dimensions.width,
+              y: Math.random() * dimensions.height,
               opacity: 0.4,
               scale: Math.random() * 1.5 + 0.5,
             }}
             animate={{
-              y: [Math.random() * window.innerHeight, Math.random() * window.innerHeight],
-              x: [Math.random() * window.innerWidth, Math.random() * window.innerWidth],
+              y: [
+                Math.random() * dimensions.height,
+                Math.random() * dimensions.height,
+              ],
+              x: [
+                Math.random() * dimensions.width,
+                Math.random() * dimensions.width,
+              ],
               rotate: [0, 360],
               opacity: [0.2, 0.8],
             }}
@@ -75,6 +96,7 @@ const LoginPage = () => {
         </h1>
 
         <form className="space-y-6">
+          {/* Email input */}
           <div className="relative flex items-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-200">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
               <Mail size={18} />
@@ -87,6 +109,7 @@ const LoginPage = () => {
             />
           </div>
 
+          {/* Password input */}
           <div className="relative flex items-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-200">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
               <Lock size={18} />
@@ -106,7 +129,10 @@ const LoginPage = () => {
 
         <p className="mt-8 text-center text-sm text-gray-700">
           Need an account?{' '}
-          <a href="/register" className="text-orange-600 hover:underline font-semibold">
+          <a
+            href="/register"
+            className="text-orange-600 hover:underline font-semibold"
+          >
             Sign up
           </a>
         </p>
