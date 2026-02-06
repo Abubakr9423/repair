@@ -1,4 +1,4 @@
-import { axiosRequest, SaveToken } from "@/utils/axios";
+import { axiosRequest, SaveTokens } from "@/utils/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const loginUser = createAsyncThunk(
@@ -7,9 +7,11 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await axiosRequest.post("/auth/login/", values);
 
-      const token = response.data?.data;
-      localStorage.setItem("token", token)
-      SaveToken(token);
+      const { access, refresh } = response.data;
+
+      if (access && refresh) {
+        SaveTokens(access, refresh);
+      }
 
       return response.data;
     } catch (error: any) {
@@ -23,18 +25,19 @@ export const loginUser = createAsyncThunk(
 
       return rejectWithValue(message);
     }
-  },
+  }
 );
 
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
-  async (values, { rejectWithValue }) => {
+  async (values: any, { rejectWithValue }) => {
     try {
-      const response = await axiosRequest.post("/Account/register", values);
+      const response = await axiosRequest.post("/auth/register/", values);
 
-      const token = response.data?.data;
-      if (token) {
-        SaveToken(token);
+      const { access, refresh } = response.data;
+
+      if (access && refresh) {
+        SaveTokens(access, refresh);
       }
 
       return response.data;
@@ -49,5 +52,5 @@ export const registerUser = createAsyncThunk(
 
       return rejectWithValue(message);
     }
-  },
+  }
 );

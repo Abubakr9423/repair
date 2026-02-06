@@ -1,11 +1,11 @@
-import { configureStore } from "@reduxjs/toolkit";
-import loginslice from "./features/log/logslice"
+import { configureStore } from '@reduxjs/toolkit'
+import authReducer from './features/log/logslice'
 
 export const store = configureStore({
   reducer: {
-    log: loginslice
+    auth: authReducer,
   },
-});
+})
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
